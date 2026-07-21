@@ -1,18 +1,11 @@
-namespace UdpTextModifier.Server;
+"""Die eingebettete Konfigurations-Webseite (HTML/CSS/JS als String)."""
 
-/// <summary>
-/// Enthält die eingebettete Konfigurations-Webseite. So bleibt der Server ein
-/// einzelnes, in sich geschlossenes Programm ohne zusätzliche Dateien.
-/// </summary>
-public static class WebPage
-{
-    public const string Html = """
-<!DOCTYPE html>
+HTML = """<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>UDP-Text-Modifier – Steuerung</title>
+  <title>UDP-Text-Modifier - Steuerung</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -54,7 +47,6 @@ public static class WebPage
     .toggle-row:last-child { border-bottom: none; }
     .toggle-label { font-weight: 600; }
     .toggle-desc { color: var(--muted); font-size: .85rem; margin-top: .15rem; }
-    /* Schalter */
     .switch { position: relative; width: 54px; height: 30px; flex: 0 0 auto; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
@@ -99,7 +91,7 @@ public static class WebPage
       <div class="toggle-row">
         <div>
           <div class="toggle-label">GROSSBUCHSTABEN</div>
-          <div class="toggle-desc">Wandelt den kompletten Text in Großbuchstaben um.</div>
+          <div class="toggle-desc">Wandelt den kompletten Text in Grossbuchstaben um.</div>
         </div>
         <label class="switch">
           <input type="checkbox" id="upperCase" />
@@ -109,7 +101,7 @@ public static class WebPage
       <div class="toggle-row">
         <div>
           <div class="toggle-label">CaMeLcAsE</div>
-          <div class="toggle-desc">Jeder zweite Buchstabe wird groß bzw. klein geschrieben.</div>
+          <div class="toggle-desc">Jeder zweite Buchstabe wird gross bzw. klein geschrieben.</div>
         </div>
         <label class="switch">
           <input type="checkbox" id="camelCase" />
@@ -119,7 +111,7 @@ public static class WebPage
       <div class="toggle-row">
         <div>
           <div class="toggle-label">ASCII-Art</div>
-          <div class="toggle-desc">Stellt den Text als große Blockschrift dar.</div>
+          <div class="toggle-desc">Stellt den Text als grosse Blockschrift dar.</div>
         </div>
         <label class="switch">
           <input type="checkbox" id="asciiArt" />
@@ -158,7 +150,7 @@ public static class WebPage
       });
       const s = await res.json();
       ids.forEach(id => document.getElementById(id).checked = !!s[id]);
-      setStatus("Gespeichert ✓");
+      setStatus("Gespeichert");
       refreshPreview();
     }
 
@@ -186,5 +178,4 @@ public static class WebPage
   </script>
 </body>
 </html>
-""";
-}
+"""

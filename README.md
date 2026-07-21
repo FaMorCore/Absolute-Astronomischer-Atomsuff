@@ -1,7 +1,8 @@
 # Absolute-Astronomischer-Atomsuff
 
-UDP-Client/-Server in C# (.NET 8) mit einer Weboberfläche zum Ein- und
-Ausschalten von Textmodifikationen.
+UDP-Client/-Server in **Python 3** mit einer Weboberfläche zum Ein- und
+Ausschalten von Textmodifikationen. Es wird **nur die Python-Standardbibliothek**
+verwendet – keine Installation zusätzlicher Pakete nötig.
 
 ## Idee
 
@@ -25,40 +26,42 @@ Sind mehrere Modifikationen aktiv, werden sie in dieser Reihenfolge angewendet:
 ## Projektstruktur
 
 ```
-src/
-  UdpTextModifier.sln
-  Server/            UDP-Server + eingebettete Webseite (HTTP)
-    Program.cs         UDP-Listener + HTTP-Server
-    TextModifier.cs    Anwenden der Modifikationen
-    AsciiArtFont.cs    Blockschrift für ASCII-Art
-    ModificationSettings.cs  thread-sicherer Zustand
-    WebPage.cs         eingebettete HTML-/JS-Oberfläche
-  Client/            UDP-Client (Konsole)
-    Program.cs
+python/
+  server.py          UDP-Listener + HTTP-Server (Webseite) in einem Programm
+  client.py          UDP-Client (Konsole)
+  text_modifier.py   Modifikationen + thread-sicherer Einstellungs-Zustand
+  ascii_art.py       Blockschrift für ASCII-Art
+  web_page.py        eingebettete HTML-/JS-Oberfläche
 scripts/
-  deploy-server.sh   Build + Deployment auf den Linux-Server
+  deploy-server.sh   Deployment auf den Linux-Server (nur Kopieren + Starten)
 ```
 
-## Bauen
+## Voraussetzung
 
-Voraussetzung: [.NET SDK 8](https://dotnet.microsoft.com/download).
+**Python 3** (getestet mit 3.11). Prüfen:
 
-```bash
-cd src
-dotnet build
+```powershell
+python --version    # Windows
+python3 --version   # Linux/macOS
 ```
+
+Es muss **nichts** zusätzlich installiert werden.
 
 ## Lokal ausführen (zum Testen)
 
-Zwei Terminals:
+Zwei Terminals. Wechsle jeweils zuerst in den Ordner `python`:
 
-```bash
+```powershell
+cd python
+
 # Terminal 1 – Server (UDP 62500, Webseite http://localhost:62501)
-dotnet run --project src/Server
+python server.py
 
 # Terminal 2 – Client gegen localhost
-dotnet run --project src/Client -- localhost 62500
+python client.py localhost 62500
 ```
+
+(Unter Linux/macOS `python3` statt `python`.)
 
 Im Browser <http://localhost:62501/> öffnen, Modifikationen einschalten, im
 Client Text eingeben – der Client gibt den modifizierten Text aus.
@@ -67,9 +70,9 @@ Client Text eingeben – der Client gibt den modifizierten Text aus.
 
 Beide Programme lesen Argumente **oder** Umgebungsvariablen:
 
-- Server: `Server [udpPort] [httpPort]` bzw. `UDP_PORT`, `HTTP_PORT`
+- Server: `python server.py [udpPort] [httpPort]` bzw. `UDP_PORT`, `HTTP_PORT`
   (Standard `62500` / `62501` – im vorgegebenen Bereich **62500–62599**).
-- Client: `Client [host] [udpPort]` bzw. `SERVER_HOST`, `UDP_PORT`
+- Client: `python client.py [host] [udpPort]` bzw. `SERVER_HOST`, `UDP_PORT`
   (Standard `if11c.berufsschule.fun` / `62500`).
 
 ## Deployment auf den Schul-Server
@@ -80,23 +83,28 @@ Kursleiter). Port-Bereich für die Anwendung: **62500–62599**.
 > Das Passwort wird bewusst **nicht** im Repository gespeichert. Es wird beim
 > `ssh`/`scp` interaktiv abgefragt (oder per `sshpass` bereitgestellt).
 
+Automatisch (kopiert die `.py`-Dateien und startet den Server):
+
 ```bash
 ./scripts/deploy-server.sh
 ```
 
-Das Skript
+Oder von Hand:
 
-1. baut den Server als eigenständige `linux-x64`-Binärdatei,
-2. kopiert sie per `scp` nach `~/udp-text-modifier` auf den Server,
-3. startet sie dort (`UDP 62500`, Webseite `HTTP 62501`).
+```bash
+scp python/*.py fabian@if11c.berufsschule.fun:~/udp-text-modifier/
+ssh fabian@if11c.berufsschule.fun
+cd ~/udp-text-modifier
+UDP_PORT=62500 HTTP_PORT=62501 python3 server.py
+```
 
 Danach:
 
 - Webseite: <http://if11c.berufsschule.fun:62501/>
 - Client gegen den Server:
 
-```bash
-dotnet run --project src/Client -- if11c.berufsschule.fun 62500
+```powershell
+python client.py if11c.berufsschule.fun 62500
 ```
 
 > Hinweis: Die gewählten Ports müssen in der Firewall des Servers geöffnet

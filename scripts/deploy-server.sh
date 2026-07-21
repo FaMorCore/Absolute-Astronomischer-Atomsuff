@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 #
-# Baut den UDP-Server als eigenständige Linux-Anwendung und kopiert ihn auf den
-# Schul-Server. Startet ihn dort im Port-Bereich 62500–62599.
+# Kopiert den Python-UDP-Server auf den Schul-Server und startet ihn dort im
+# Port-Bereich 62500-62599. Es ist KEIN Build noetig - Python reicht.
 #
-# Voraussetzung: .NET SDK 8, ssh & scp lokal vorhanden.
+# Voraussetzung: ssh & scp lokal vorhanden, python3 auf dem Server.
 #
 # Verwendung:
 #   ./scripts/deploy-server.sh
 #
-# Konfiguration (per Umgebungsvariable überschreibbar):
+# Konfiguration (per Umgebungsvariable ueberschreibbar):
 set -euo pipefail
 
 SSH_USER="${SSH_USER:-fabian}"
@@ -24,27 +24,20 @@ HTTP_PORT="${HTTP_PORT:-62501}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 
-echo "==> Baue Server (linux-x64, self-contained) ..."
-dotnet publish "$ROOT_DIR/src/Server/Server.csproj" \
-  -c Release -r linux-x64 --self-contained true \
-  -p:PublishSingleFile=true \
-  -o "$ROOT_DIR/publish/server"
-
 echo "==> Lege Remote-Verzeichnis an: $REMOTE_DIR"
 ssh "${SSH_USER}@${SSH_HOST}" "mkdir -p '$REMOTE_DIR'"
 
-echo "==> Kopiere Binärdatei ..."
-scp "$ROOT_DIR/publish/server/Server" "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/Server"
+echo "==> Kopiere Python-Dateien ..."
+scp "$ROOT_DIR/python/"*.py "${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}/"
 
 echo "==> Starte Server auf ${SSH_HOST} (UDP $UDP_PORT / HTTP $HTTP_PORT) ..."
 ssh "${SSH_USER}@${SSH_HOST}" bash -s <<EOF
   set -e
   cd '$REMOTE_DIR'
-  chmod +x Server
   # eventuell laufenden Server beenden
-  pkill -f '$REMOTE_DIR/Server' 2>/dev/null || true
+  pkill -f '$REMOTE_DIR/server.py' 2>/dev/null || true
   # im Hintergrund starten
-  UDP_PORT=$UDP_PORT HTTP_PORT=$HTTP_PORT nohup ./Server > server.log 2>&1 &
+  UDP_PORT=$UDP_PORT HTTP_PORT=$HTTP_PORT nohup python3 server.py > server.log 2>&1 &
   sleep 1
   echo "Server gestartet. Log: $REMOTE_DIR/server.log"
 EOF

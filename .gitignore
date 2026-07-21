@@ -9,3 +9,7 @@ out/
 .vs/
 .idea/
 *.suo
+
+# Python
+__pycache__/
+*.pyc
